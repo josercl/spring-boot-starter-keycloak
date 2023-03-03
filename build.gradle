@@ -1,0 +1,41 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+group 'com.gitlab.josercl'
+version '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-security:3.0.3'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:3.0.3'
+}
+
+publishing {
+    repositories {
+        maven {
+            url "https://gitlab.com/api/v4/projects/44022756/packages/maven"
+            name "GitLab"
+            credentials(HttpHeaderCredentials) {
+                name = 'Job-Token'
+                value = System.getenv("CI_JOB_TOKEN")
+            }
+            authentication {
+                header(HttpHeaderAuthentication)
+            }
+        }
+    }
+
+    publications {
+        maven(MavenPublication) {
+            artifactId = 'spring-boot-starter-keycloak'
+            version "${project.version}"
+            group "${project.group}"
+            from components.java
+        }
+    }
+}
