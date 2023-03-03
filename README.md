@@ -14,7 +14,29 @@ Agregar dependencia
 implementation 'com.gitlab.josercl:spring-boot-starter-keycloak:1.0'
 ```
 
+Editar la clase con la anotación y añadir el paquete de java para scanear configuraciones
+
+```java
+@SpringBootApplication(
+    scanBasePackages = {"com.gitlab.josercl.security"}
+)
+public class MainApplication {
+    //
+}
+```
+
 Editar application.properties (application.yml) y agregar las siguientes propiedades:
+
+```properties
+spring.security.oauth2.resourceserver.jwt.issuer-uri=${custom.config.keycloak.server:http://localhost:8080}/realms/${custom.config.keycloak.realm:dummy}
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri=${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+
+custom.config.keycloak.server=${KEYCLOAK_SERVER:http://localhost}
+custom.config.keycloak.realm=${KEYCLOAK_REALM:realm}
+
+custom.config.keycloak.auth.client.client-id=${KEYCLOAK_CLIENT_ID:client-id}
+custom.config.keycloak.auth.client.principal-attribute=preferred_username
+```
 
 ```yaml
 spring:

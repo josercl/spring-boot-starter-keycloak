@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
     id 'maven-publish'
 }
 
@@ -11,8 +11,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-security:3.0.3'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:3.0.3'
+    api 'org.springframework.boot:spring-boot-starter-security:3.0.3'
+    api 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:3.0.3'
 }
 
 publishing {
