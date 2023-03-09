@@ -6,11 +6,11 @@ import com.gitlab.josercl.security.provider.PublicRoutesProvider;
 import com.gitlab.josercl.security.provider.impl.DefaultPublicRoutesProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -23,23 +23,23 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.List;
 
-@Configuration
-@Import({KeycloakProperties.class})
+@AutoConfiguration
 @EnableWebSecurity
 @EnableMethodSecurity
+@EnableConfigurationProperties(KeycloakProperties.class)
 public class KeycloakSecurityAutoconfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(KeycloakSecurityAutoconfiguration.class);
 
-    @Bean
-    @ConditionalOnBean(KeycloakProperties.class)
+    @Bean(name = "keycloakJwtAuthConverter")
+    @ConditionalOnProperty(prefix = "custom.config.keycloak", name = {"server", "realm", "auth.client.client-id"})
     public Converter<Jwt, AbstractAuthenticationToken> keycloakJwtAuthConverter(KeycloakProperties properties) {
         log.info("Using KeycloakJwtAuthConverter");
         return new KeycloakJwtConverter(properties);
     }
 
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(name = "keycloakJwtAuthConverter")
     public Converter<Jwt, AbstractAuthenticationToken> defaultJwtAuthConverter() {
         log.info("Using defaultJwtAuthConverter");
         return new JwtAuthenticationConverter();

@@ -14,17 +14,6 @@ Agregar dependencia
 implementation 'com.gitlab.josercl:spring-boot-starter-keycloak:1.0.1'
 ```
 
-Editar la clase con la anotación y añadir el paquete de java para scanear configuraciones
-
-```java
-@SpringBootApplication(
-    scanBasePackages = {"com.gitlab.josercl.security"}
-)
-public class MainApplication {
-    //
-}
-```
-
 Editar application.properties (application.yml) y agregar las siguientes propiedades:
 
 ```properties

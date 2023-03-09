@@ -1,9 +1,7 @@
 package com.gitlab.josercl.security.properties;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConditionalOnProperty(prefix = "custom.config.keycloak", name = "server")
 @ConfigurationProperties(prefix = "custom.config.keycloak")
 public class KeycloakProperties {
 
