@@ -1,6 +1,10 @@
 package com.gitlab.josercl.security.converter;
 
+import com.gitlab.josercl.security.Constants;
 import com.gitlab.josercl.security.properties.KeycloakProperties;
+import com.gitlab.josercl.security.provider.ExcludedAuthoritiesProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,14 +26,18 @@ import static java.util.stream.Collectors.toSet;
 
 @SuppressWarnings("unchecked")
 public class KeycloakJwtConverter implements Converter<Jwt, AbstractAuthenticationToken> {
-    public static final String ROLE_PREFIX = "ROLE_";
+    private static final Logger log = LoggerFactory.getLogger(KeycloakJwtConverter.class);
     public static final String RESOURCE_ACCESS_CLAIM = "resource_access";
     public static final String REALM_ACCESS_CLAIM = "realm_access";
     private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
     private final KeycloakProperties properties;
+    private final ExcludedAuthoritiesProvider excludedAuthoritiesProvider;
 
-    public KeycloakJwtConverter(KeycloakProperties properties) {
+    public KeycloakJwtConverter(KeycloakProperties properties, ExcludedAuthoritiesProvider excludedAuthoritiesProvider) {
         this.properties = properties;
+        this.excludedAuthoritiesProvider = excludedAuthoritiesProvider;
+
+        log.info("Filtering out authorities: " + excludedAuthoritiesProvider.getExcludedAuthorities());
     }
 
     @Override
@@ -42,6 +50,7 @@ public class KeycloakJwtConverter implements Converter<Jwt, AbstractAuthenticati
                 Stream.concat(defaultJwtRoles.stream(), realmRoles.stream()),
                 resourcesRoles.stream()
             )
+            .filter(grantedAuthority -> this.excludedAuthoritiesProvider.accept(grantedAuthority.getAuthority()))
             .collect(toSet());
 
         return new JwtAuthenticationToken(jwt, grantedAuthorities, getPrincipalClaimName(jwt));
@@ -61,7 +70,7 @@ public class KeycloakJwtConverter implements Converter<Jwt, AbstractAuthenticati
             .map(resource -> (List<String>) resource.get("roles"))
             .orElse(List.of())
             .stream()
-            .map(role -> new SimpleGrantedAuthority(ROLE_PREFIX + role))
+            .map(role -> new SimpleGrantedAuthority(Constants.ROLE_PREFIX + role))
             .collect(Collectors.toSet());
     }
 
@@ -70,7 +79,7 @@ public class KeycloakJwtConverter implements Converter<Jwt, AbstractAuthenticati
             .map(resource -> (List<String>) resource.get("roles"))
             .orElse(List.of())
             .stream()
-            .map(role -> new SimpleGrantedAuthority(ROLE_PREFIX + role))
+            .map(role -> new SimpleGrantedAuthority(Constants.ROLE_PREFIX + role))
             .collect(Collectors.toSet());
     }
 }

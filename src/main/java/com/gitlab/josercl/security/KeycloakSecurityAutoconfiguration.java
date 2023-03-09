@@ -2,7 +2,9 @@ package com.gitlab.josercl.security;
 
 import com.gitlab.josercl.security.converter.KeycloakJwtConverter;
 import com.gitlab.josercl.security.properties.KeycloakProperties;
+import com.gitlab.josercl.security.provider.ExcludedAuthoritiesProvider;
 import com.gitlab.josercl.security.provider.PublicRoutesProvider;
+import com.gitlab.josercl.security.provider.impl.DefaultAuthoritiesExcluder;
 import com.gitlab.josercl.security.provider.impl.DefaultPublicRoutesProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,11 +33,26 @@ public class KeycloakSecurityAutoconfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(KeycloakSecurityAutoconfiguration.class);
 
+    @Bean
+    @ConditionalOnMissingBean
+    public ExcludedAuthoritiesProvider excludedAuthoritiesProvider() {
+        return new DefaultAuthoritiesExcluder();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public PublicRoutesProvider publicRoutesProvider() {
+        return new DefaultPublicRoutesProvider();
+    }
+
     @Bean(name = "keycloakJwtAuthConverter")
     @ConditionalOnProperty(prefix = "custom.config.keycloak", name = {"server", "realm", "auth.client.client-id"})
-    public Converter<Jwt, AbstractAuthenticationToken> keycloakJwtAuthConverter(KeycloakProperties properties) {
+    public Converter<Jwt, AbstractAuthenticationToken> keycloakJwtAuthConverter(
+        KeycloakProperties properties,
+        ExcludedAuthoritiesProvider excludedAuthoritiesProvider
+    ) {
         log.info("Using KeycloakJwtAuthConverter");
-        return new KeycloakJwtConverter(properties);
+        return new KeycloakJwtConverter(properties, excludedAuthoritiesProvider);
     }
 
     @Bean
@@ -43,12 +60,6 @@ public class KeycloakSecurityAutoconfiguration {
     public Converter<Jwt, AbstractAuthenticationToken> defaultJwtAuthConverter() {
         log.info("Using defaultJwtAuthConverter");
         return new JwtAuthenticationConverter();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public PublicRoutesProvider publicRoutesProvider() {
-        return new DefaultPublicRoutesProvider();
     }
 
     @Bean
