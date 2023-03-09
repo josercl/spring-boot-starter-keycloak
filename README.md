@@ -11,7 +11,7 @@ repositories {
 Agregar dependencia
 
 ```groovy
-implementation 'com.gitlab.josercl:spring-boot-starter-keycloak:1.0'
+implementation 'com.gitlab.josercl:spring-boot-starter-keycloak:1.0.1'
 ```
 
 Editar la clase con la anotación y añadir el paquete de java para scanear configuraciones
