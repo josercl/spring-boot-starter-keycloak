@@ -52,6 +52,14 @@ public interface PublicRoutesProvider {
             return this;
         }
 
+        public Builder withActuator() {
+            return withActuator("/actuator");
+        }
+
+        public Builder withActuator(String actuatorPrefix) {
+            return withPrefix(actuatorPrefix);
+        }
+
         public PublicRoutesProvider build() {
             return () -> publicRoutes;
         }
