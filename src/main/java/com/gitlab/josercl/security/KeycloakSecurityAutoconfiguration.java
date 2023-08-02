@@ -50,7 +50,6 @@ public class KeycloakSecurityAutoconfiguration {
     @Bean
     @ConditionalOnMissingBean
     public RoleMapper roleMapper(KeycloakProperties properties) {
-        System.out.println("using default roleMapper");
         return new DefaultRoleMapper(properties.getAuth().getClient().getClientId());
     }
 
