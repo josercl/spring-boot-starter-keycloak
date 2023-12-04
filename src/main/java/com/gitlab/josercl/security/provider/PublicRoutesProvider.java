@@ -1,8 +1,10 @@
 package com.gitlab.josercl.security.provider;
 
+import org.springframework.security.config.Customizer;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Optional;
 
 public interface PublicRoutesProvider {
     List<String> getPublicRoutes();
@@ -29,9 +31,9 @@ public interface PublicRoutesProvider {
             return withSwaggerUI(builder -> {});
         }
 
-        public Builder withSwaggerUI(Consumer<SwaggerRoutes.Builder> swaggerCustomizer) {
+        public Builder withSwaggerUI(Customizer<SwaggerRoutes.Builder> swaggerCustomizer) {
             SwaggerRoutes.Builder builder = SwaggerRoutes.builder();
-            swaggerCustomizer.accept(builder);
+            swaggerCustomizer.customize(builder);
             withSwaggerUI(builder);
             return this;
         }
@@ -58,6 +60,11 @@ public interface PublicRoutesProvider {
 
         public Builder withActuator(String actuatorPrefix) {
             return withPrefix(actuatorPrefix);
+        }
+
+        public Builder customizeWith(Customizer<Builder> customizer) {
+            Optional.ofNullable(customizer).ifPresent(c -> c.customize(this));
+            return this;
         }
 
         public PublicRoutesProvider build() {

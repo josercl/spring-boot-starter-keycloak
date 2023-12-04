@@ -11,7 +11,7 @@ repositories {
 Agregar dependencia
 
 ```groovy
-implementation 'com.gitlab.josercl:spring-boot-starter-keycloak:1.0.1'
+implementation 'com.gitlab.josercl:spring-boot-starter-keycloak:1.0.4'
 ```
 
 Editar application.properties (application.yml) y agregar las siguientes propiedades:

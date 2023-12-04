@@ -7,7 +7,6 @@ import com.gitlab.josercl.security.properties.KeycloakProperties;
 import com.gitlab.josercl.security.provider.ExcludedAuthoritiesProvider;
 import com.gitlab.josercl.security.provider.PublicRoutesProvider;
 import com.gitlab.josercl.security.provider.impl.DefaultAuthoritiesExcluder;
-import com.gitlab.josercl.security.provider.impl.DefaultPublicRoutesProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -17,9 +16,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -43,8 +45,17 @@ public class KeycloakSecurityAutoconfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public PublicRoutesProvider publicRoutesProvider() {
-        return new DefaultPublicRoutesProvider();
+    Customizer<PublicRoutesProvider.Builder> publicRoutesCustomizer() {
+        return Customizer.withDefaults();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public final PublicRoutesProvider publicRouteBuilder(Customizer<PublicRoutesProvider.Builder> customizer) {
+        return PublicRoutesProvider.builder()
+            .withDefaults()
+            .customizeWith(customizer)
+            .build();
     }
 
     @Bean
@@ -88,12 +99,13 @@ public class KeycloakSecurityAutoconfiguration {
 
                 authorizeConfig.anyRequest().authenticated();
             })
-            .formLogin().disable()
-            .csrf().disable()
-            .oauth2ResourceServer(resourceServerCustomizer -> resourceServerCustomizer.jwt()
-                .jwtAuthenticationConverter(jwtConverter)
-            )
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+            .csrf(AbstractHttpConfigurer::disable)
+            .formLogin(FormLoginConfigurer::disable)
+            .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .oauth2ResourceServer(resourceServerCustomizer -> resourceServerCustomizer.jwt(
+                    jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtConverter)
+                )
+            );
 
         return http.build();
     }
