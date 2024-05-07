@@ -5,8 +5,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,7 +27,7 @@ public class DefaultRoleMapper implements RoleMapper {
     public Collection<GrantedAuthority> mapRoles(Jwt jwt) {
         Collection<GrantedAuthority> realmRoles = extractRealmRoles(jwt);
         Collection<GrantedAuthority> resourcesRoles = extractResourcesRoles(jwt);
-        var result = new ArrayList<>(realmRoles);
+        HashSet<GrantedAuthority> result = new HashSet<>(realmRoles);
         result.addAll(resourcesRoles);
 
         return result;

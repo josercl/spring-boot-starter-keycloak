@@ -15,6 +15,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -96,6 +97,11 @@ public class KeycloakSecurityAutoconfiguration {
                 log.info("Using public routes: {}", publicRoutes1);
                 String[] publicRoutes = publicRoutes1.toArray(new String[0]);
                 authorizeConfig.requestMatchers(publicRoutes).permitAll();
+
+                List<Pair<String, HttpMethod>> publicRoutesWithMethod = publicRoutesProvider.getPublicRoutesWithMethod();
+                for (Pair<String, HttpMethod> routeMethodPair : publicRoutesWithMethod) {
+                    authorizeConfig.requestMatchers(routeMethodPair.second(), routeMethodPair.first()).permitAll();
+                }
 
                 authorizeConfig.anyRequest().authenticated();
             })
