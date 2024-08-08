@@ -3,6 +3,7 @@ package com.gitlab.josercl.security;
 import com.gitlab.josercl.security.converter.KeycloakJwtConverter;
 import com.gitlab.josercl.security.mapper.DefaultRoleMapper;
 import com.gitlab.josercl.security.mapper.RoleMapper;
+import com.gitlab.josercl.security.mapper.RoleMapperExtender;
 import com.gitlab.josercl.security.properties.KeycloakProperties;
 import com.gitlab.josercl.security.provider.ExcludedAuthoritiesProvider;
 import com.gitlab.josercl.security.provider.PublicRoutesProvider;
@@ -16,6 +17,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpMethod;
+import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -61,8 +63,8 @@ public class KeycloakSecurityAutoconfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public RoleMapper roleMapper(KeycloakProperties properties) {
-        return new DefaultRoleMapper(properties.getAuth().getClient().getClientId());
+    public RoleMapper roleMapper(KeycloakProperties properties, @Nullable RoleMapperExtender roleMapperExtender) {
+        return new DefaultRoleMapper(properties.getAuth().getClient().getClientId(), roleMapperExtender);
     }
 
     @Bean(name = "keycloakJwtAuthConverter")

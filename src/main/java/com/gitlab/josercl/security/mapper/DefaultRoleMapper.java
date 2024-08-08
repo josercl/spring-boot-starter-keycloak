@@ -18,9 +18,11 @@ public class DefaultRoleMapper implements RoleMapper {
     public static final String REALM_ACCESS_CLAIM = "realm_access";
 
     private final String clientId;
+    private final RoleMapperExtender roleMapperExtender;
 
-    public DefaultRoleMapper(String clientId) {
+    public DefaultRoleMapper(String clientId, RoleMapperExtender roleMapperExtender) {
         this.clientId = clientId;
+        this.roleMapperExtender = roleMapperExtender;
     }
 
     @Override
@@ -29,6 +31,10 @@ public class DefaultRoleMapper implements RoleMapper {
         Collection<GrantedAuthority> resourcesRoles = extractResourcesRoles(jwt);
         HashSet<GrantedAuthority> result = new HashSet<>(realmRoles);
         result.addAll(resourcesRoles);
+        Collection<GrantedAuthority> extraAuthorities = Optional.ofNullable(roleMapperExtender)
+            .map(e -> e.apply(jwt))
+            .orElse(List.of());
+        result.addAll(extraAuthorities);
 
         return result;
     }

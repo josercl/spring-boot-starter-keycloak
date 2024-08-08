@@ -36,7 +36,7 @@ public class KeycloakJwtConverter implements Converter<Jwt, AbstractAuthenticati
         this.roleMapper = roleMapper;
         this.excludedAuthoritiesProvider = excludedAuthoritiesProvider;
 
-        log.info("Filtering out authorities: " + excludedAuthoritiesProvider.getExcludedAuthorities());
+        log.info("Filtering out authorities: {}", excludedAuthoritiesProvider.getExcludedAuthorities());
     }
 
     @Override
