@@ -31,6 +31,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.List;
+import java.util.Optional;
 
 @AutoConfiguration
 @EnableWebSecurity
@@ -90,7 +91,8 @@ public class KeycloakSecurityAutoconfiguration {
     public SecurityFilterChain securityFilterChain(
         HttpSecurity http,
         Converter<Jwt, AbstractAuthenticationToken> jwtConverter,
-        PublicRoutesProvider publicRoutesProvider
+        PublicRoutesProvider publicRoutesProvider,
+        @Nullable Customizer<HttpSecurity> securityCustomizer
     ) throws Exception {
         http
             .authorizeHttpRequests(authorizeConfig -> {
@@ -102,6 +104,7 @@ public class KeycloakSecurityAutoconfiguration {
 
                 List<Pair<String, HttpMethod>> publicRoutesWithMethod = publicRoutesProvider.getPublicRoutesWithMethod();
                 for (Pair<String, HttpMethod> routeMethodPair : publicRoutesWithMethod) {
+                    log.info("Using public routes: {}", publicRoutes1);
                     authorizeConfig.requestMatchers(routeMethodPair.second(), routeMethodPair.first()).permitAll();
                 }
 
@@ -114,6 +117,8 @@ public class KeycloakSecurityAutoconfiguration {
                     jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtConverter)
                 )
             );
+
+        Optional.ofNullable(securityCustomizer).ifPresent(c -> securityCustomizer.customize(http));
 
         return http.build();
     }
