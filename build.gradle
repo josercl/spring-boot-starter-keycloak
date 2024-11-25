@@ -4,17 +4,17 @@ plugins {
 }
 
 group 'com.gitlab.josercl'
-version '1.0.6.1'
-sourceCompatibility = 17
-targetCompatibility = 17
+version '2.0.0'
+sourceCompatibility = 21
+targetCompatibility = 21
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    api 'org.springframework.boot:spring-boot-starter-security:3.2.0'
-    api 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:3.2.0'
+    api 'org.springframework.boot:spring-boot-starter-security:3.3.0'
+    api 'org.springframework.boot:spring-boot-starter-oauth2-resource-server:3.3.0'
 }
 
 publishing {

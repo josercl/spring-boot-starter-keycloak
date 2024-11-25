@@ -8,30 +8,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings("unused")
 public interface PublicRoutesProvider {
-    List<String> getPublicRoutes();
-
-    default List<Pair<String, HttpMethod>> getPublicRoutesWithMethod() {
-        return List.of();
-    };
+    List<Pair<String, HttpMethod>> getPublicRoutes();
 
     static PublicRoutesProvider.Builder builder() {
         return new Builder();
     }
 
     final class Builder {
-        private final List<String> publicRoutes = new ArrayList<>();
         private final List<Pair<String, HttpMethod>> publicRoutesWithMethods = new ArrayList<>();
 
         private Builder() {}
 
-        public Builder add(String route) {
-            publicRoutes.add(route);
+        public Builder add(String route, HttpMethod method) {
+            publicRoutesWithMethods.add(new Pair<>(route, method));
             return this;
         }
 
-        public Builder add(String route, HttpMethod method) {
-            publicRoutesWithMethods.add(new Pair<>(route, method));
+        public Builder add(String route) {
+            add(route, null);
             return this;
         }
 
@@ -80,17 +76,7 @@ public interface PublicRoutesProvider {
         }
 
         public PublicRoutesProvider build() {
-            return new PublicRoutesProvider() {
-                @Override
-                public List<String> getPublicRoutes() {
-                    return publicRoutes;
-                }
-
-                @Override
-                public List<Pair<String, HttpMethod>> getPublicRoutesWithMethod() {
-                    return publicRoutesWithMethods;
-                }
-            };
+            return () -> publicRoutesWithMethods;
         }
     }
 }

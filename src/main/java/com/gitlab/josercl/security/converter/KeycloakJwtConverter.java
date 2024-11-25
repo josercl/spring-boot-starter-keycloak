@@ -6,6 +6,7 @@ import com.gitlab.josercl.security.provider.ExcludedAuthoritiesProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -40,7 +41,7 @@ public class KeycloakJwtConverter implements Converter<Jwt, AbstractAuthenticati
     }
 
     @Override
-    public AbstractAuthenticationToken convert(Jwt jwt) {
+    public AbstractAuthenticationToken convert(@NonNull Jwt jwt) {
         Collection<GrantedAuthority> defaultJwtRoles = jwtGrantedAuthoritiesConverter.convert(jwt);
         Collection<GrantedAuthority> mapperRoles = roleMapper.mapRoles(jwt);
 

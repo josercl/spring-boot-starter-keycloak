@@ -56,7 +56,7 @@ public class KeycloakSecurityAutoconfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public final PublicRoutesProvider publicRouteBuilder(Customizer<PublicRoutesProvider.Builder> customizer) {
+    public PublicRoutesProvider publicRouteBuilder(Customizer<PublicRoutesProvider.Builder> customizer) {
         return PublicRoutesProvider.builder()
             .withDefaults()
             .customizeWith(customizer)
@@ -97,15 +97,13 @@ public class KeycloakSecurityAutoconfiguration {
     ) throws Exception {
         http
             .authorizeHttpRequests(authorizeConfig -> {
-
-                List<String> publicRoutes1 = publicRoutesProvider.getPublicRoutes();
-                log.info("Using public routes: {}", publicRoutes1);
-                String[] publicRoutes = publicRoutes1.toArray(new String[0]);
-                authorizeConfig.requestMatchers(publicRoutes).permitAll();
-
-                List<Pair<String, HttpMethod>> publicRoutesWithMethod = publicRoutesProvider.getPublicRoutesWithMethod();
+                List<Pair<String, HttpMethod>> publicRoutesWithMethod = publicRoutesProvider.getPublicRoutes();
                 for (Pair<String, HttpMethod> routeMethodPair : publicRoutesWithMethod) {
-                    log.info("Using public routes: {}", publicRoutes1);
+                    log.info(
+                        "Using public route: {} - {}",
+                        Optional.ofNullable(routeMethodPair.second()).map(HttpMethod::toString).orElse("ALL"),
+                        routeMethodPair.first()
+                    );
                     authorizeConfig.requestMatchers(routeMethodPair.second(), routeMethodPair.first()).permitAll();
                 }
 
@@ -113,6 +111,7 @@ public class KeycloakSecurityAutoconfiguration {
             })
             .csrf(AbstractHttpConfigurer::disable)
             .formLogin(FormLoginConfigurer::disable)
+            .logout(AbstractHttpConfigurer::disable)
             .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .oauth2ResourceServer(resourceServerCustomizer -> resourceServerCustomizer.jwt(
                     jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtConverter)
