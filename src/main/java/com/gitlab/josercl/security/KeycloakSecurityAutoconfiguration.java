@@ -2,8 +2,11 @@ package com.gitlab.josercl.security;
 
 import com.gitlab.josercl.security.converter.KeycloakJwtConverter;
 import com.gitlab.josercl.security.mapper.DefaultRoleMapper;
+import com.gitlab.josercl.security.mapper.DefaultScopeMapper;
 import com.gitlab.josercl.security.mapper.RoleMapper;
 import com.gitlab.josercl.security.mapper.RoleMapperExtender;
+import com.gitlab.josercl.security.mapper.ScopeMapper;
+import com.gitlab.josercl.security.mapper.ScopeMapperExtender;
 import com.gitlab.josercl.security.properties.KeycloakProperties;
 import com.gitlab.josercl.security.provider.ExcludedAuthoritiesProvider;
 import com.gitlab.josercl.security.provider.PublicRoutesProvider;
@@ -69,15 +72,22 @@ public class KeycloakSecurityAutoconfiguration {
         return new DefaultRoleMapper(properties.getAuth().getClient().getClientId(), roleMapperExtender);
     }
 
+    @Bean
+    @ConditionalOnMissingBean
+    public ScopeMapper scopeMapper(@Nullable ScopeMapperExtender scopeMapperExtender) {
+        return new DefaultScopeMapper(scopeMapperExtender);
+    }
+
     @Bean(name = "keycloakJwtAuthConverter")
     @ConditionalOnProperty(prefix = "custom.config.keycloak", name = {"server", "realm", "auth.client.client-id"})
     public Converter<Jwt, AbstractAuthenticationToken> keycloakJwtAuthConverter(
         KeycloakProperties properties,
         RoleMapper roleMapper,
+        ScopeMapper scopeMapper,
         ExcludedAuthoritiesProvider excludedAuthoritiesProvider
     ) {
         log.info("Using KeycloakJwtAuthConverter");
-        return new KeycloakJwtConverter(properties, roleMapper, excludedAuthoritiesProvider);
+        return new KeycloakJwtConverter(properties, roleMapper, scopeMapper, excludedAuthoritiesProvider);
     }
 
     @Bean

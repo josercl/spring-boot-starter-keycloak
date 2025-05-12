@@ -1,12 +1,12 @@
 package com.gitlab.josercl.security.converter;
 
 import com.gitlab.josercl.security.mapper.RoleMapper;
+import com.gitlab.josercl.security.mapper.ScopeMapper;
 import com.gitlab.josercl.security.properties.KeycloakProperties;
 import com.gitlab.josercl.security.provider.ExcludedAuthoritiesProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -26,29 +26,31 @@ public class KeycloakJwtConverter implements Converter<Jwt, AbstractAuthenticati
     private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
     private final KeycloakProperties properties;
     private final RoleMapper roleMapper;
+    private final ScopeMapper scopeMapper;
     private final ExcludedAuthoritiesProvider excludedAuthoritiesProvider;
 
     public KeycloakJwtConverter(
         KeycloakProperties properties,
         RoleMapper roleMapper,
+        ScopeMapper scopeMapper,
         ExcludedAuthoritiesProvider excludedAuthoritiesProvider
     ) {
         this.properties = properties;
         this.roleMapper = roleMapper;
+        this.scopeMapper = scopeMapper;
         this.excludedAuthoritiesProvider = excludedAuthoritiesProvider;
 
         log.info("Filtering out authorities: {}", excludedAuthoritiesProvider.getExcludedAuthorities());
     }
 
     @Override
-    public AbstractAuthenticationToken convert(@NonNull Jwt jwt) {
+    public AbstractAuthenticationToken convert(Jwt jwt) {
         Collection<GrantedAuthority> defaultJwtRoles = jwtGrantedAuthoritiesConverter.convert(jwt);
-        Collection<GrantedAuthority> mapperRoles = roleMapper.mapRoles(jwt);
+        Collection<GrantedAuthority> mappedRoles = roleMapper.mapRoles(jwt);
+        Collection<GrantedAuthority> mappedScopes = scopeMapper.mapScopes(jwt);
 
-        Set<GrantedAuthority> grantedAuthorities = Stream.concat(
-                defaultJwtRoles.stream(),
-                mapperRoles.stream()
-            )
+        Set<GrantedAuthority> grantedAuthorities =
+            Stream.concat(Stream.concat(defaultJwtRoles.stream(), mappedRoles.stream()), mappedScopes.stream())
             .filter(grantedAuthority -> this.excludedAuthoritiesProvider.accept(grantedAuthority.getAuthority()))
             .collect(toSet());
 
